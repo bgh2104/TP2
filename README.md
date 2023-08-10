@@ -10,6 +10,8 @@
 * scikit-learn==1.2.2
 * gensim==4.3.1
 * spacy==3.5.3
+* matplotlib.pyplot==3.7.2
+* seaborn==0.12.2
 
 ### 팀 규칙
 * 매일 오전 10시, 오후 3시 회의
