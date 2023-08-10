@@ -12,6 +12,7 @@
 * spacy==3.5.3
 * matplotlib.pyplot==3.7.2
 * seaborn==0.12.2
+* datetime==5.2
 
 ### 팀 규칙
 * 매일 오전 10시, 오후 3시 회의
