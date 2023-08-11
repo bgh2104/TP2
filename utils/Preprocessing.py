@@ -1,6 +1,8 @@
 import spacy
 import re
 from gensim.models import Word2Vec
+from sklearn.preprocessing import LabelEncoder
+import pandas as pd
 
 nlp = spacy.load('en_core_web_sm')
 wv = Word2Vec.load("./models/word2vec.model").wv
@@ -32,3 +34,48 @@ def vectorizer(token_list):
         vector += wv[token]
     return vector / len(token_list)
 
+
+
+# movie_df 전처리
+def preprocessing_movie(movies_df):
+    # 장르 분할
+    movies_df['genres'] = movies_df['genres'].str.split('|')
+    edited_movies_df = movies_df.explode('genres')
+    # 장르를 label encoding
+    genres = edited_movies_df['genres']
+    encoder = LabelEncoder()
+    encoded_genres = encoder.fit_transform(genres)
+    encoded_genres = pd.DataFrame(encoded_genres, columns=['genres'])
+    edited_movies_df['genres'] = encoded_genres
+
+    # 'year' 열에 연도 정보 추출하여 추가
+    edited_movies_df['year'] = edited_movies_df['title'].str.extract(r'\((\d{4})\)')
+    # 연도 정보가 포함된 제목 수정
+    edited_movies_df['title'] = edited_movies_df['title'].str.replace(pat=r'[^\w\s]', repl=r'', regex=True)
+    edited_movies_df['title'] = edited_movies_df['title'].str.replace(pat=r'[0-9]', repl=r'', regex=True)
+    # 연대 컬럼 삽입
+    edited_movies_df["year_term"] = edited_movies_df["year"].apply(lambda x : x[-4 :-1] + "0")
+    # 데이터 타입 정수형으로 변경
+    edited_movies_df[['year', 'year_term']] = edited_movies_df[['year', 'year_term']].astype(int)
+
+    return edited_movies_df
+
+
+# users_df 전처리
+def preprocessing_users(users_df):
+    # 성별을 0, 1 변환
+    gender = users_df['gender']
+    encoder = LabelEncoder()
+    encoded_gender = encoder.fit_transform(gender)
+    encoded_gender = pd.DataFrame(encoded_gender, columns=['gender'])
+    users_df['gender'] = encoded_gender
+    # State 컬럼 추가
+    # zip_code의 첫번째 자릿수 혹은 하이픈(-) 전의 숫자가 State를 의미
+    users_df['state'] = users_df['zip_code'].apply(lambda x: x.split('-')[0] if '-' in x else x[0])
+    # 데이터 타입 정수형으로 변경
+    users_df['state'] = users_df['state'].astype(int)
+
+    return users_df
+
+
+# ratings_df 전처리할 것 없음
