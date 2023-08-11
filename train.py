@@ -30,7 +30,7 @@ def parse_args():
 args = parse_args()
 
 #데이터 폴더 경로
-DIR_PATH = "./datasets/"
+DIR_PATH = "./data/"
 
 #데이터 호출
 users_df = Dataloader.load_users(DIR_PATH)
