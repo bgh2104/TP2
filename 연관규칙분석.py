@@ -1,19 +1,5 @@
 from utils import Dataloader
 import pandas as pd
-import numpy as np
-import os
-from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
-import matplotlib.pyplot as plt # 3.7.2
-import random
-from mlxtend.frequent_patterns import apriori, association_rules #0.22.0
-import matplotlib.colors as mcl
-from matplotlib.colors import LinearSegmentedColormap
-from mlxtend.preprocessing import TransactionEncoder
-import pickle
-from sklearn.metrics.pairwise import cosine_similarity
-import re
 from joblib import dump, load
 
 #데이터 폴더 경로
@@ -22,33 +8,52 @@ DIR_PATH = "./data/"
 #데이터 호출
 ratings_df = Dataloader.load_ratings(DIR_PATH)
 
-def hybrid_model_loader():
-
+def model_loader():
     # 모델 불러오기
-    association_rules_df = load('association_rules_df.joblib')
+    association_df = load('association_df.joblib')
+    return association_df
+
+association_df = model_loader()
+
+# 단일 사용자 대상 추천영화 리스트 보여주는 함수
+def generate_recommendations(user_id, top_n=10):
     
-    return association_rules_df
+    movie_matrix = ratings_df.groupby('userId')['movieId'].agg(list)
+    movie_matrix = pd.DataFrame(movie_matrix)
+    user_watched_movies = movie_matrix.loc[user_id][0]
+
+    recommended_movies_df = pd.DataFrame(columns=['antecedent', 'recommended_movie', 'support', 'confidence', 'lift'])
+    antecedent = []
+    recommended_movie = []
+    support = []
+    confidence = []
+    lift = []
+    i_list = []
+
+    for i in association_df['antecedents'].values:
+        if not i in i_list:
+            i_list.append(i)
+            if i in user_watched_movies:
+                filtered_records = association_df[association_df['antecedents'] == i]
+                filtered_records = filtered_records.nlargest(5, 'lift')
+                for j in range(len(filtered_records)):
+                    antecedent.append(filtered_records['antecedents'].iloc[j])
+                    recommended_movie.append(filtered_records['consequents'].iloc[j])
+                    support.append(filtered_records['support'].iloc[j])
+                    confidence.append(filtered_records['confidence'].iloc[j])
+                    lift.append(filtered_records['lift'].iloc[j])
+        else:
+            pass
 
 
-def recommend_movies(association_rules_df, user_watched_movies, min_lift=1):
-    recommended_movies = []
-    top_n = round(len(user_watched_movies)*0.2)
+    recommended_movies_df['antecedent'] = antecedent
+    recommended_movies_df['recommended_movie'] = recommended_movie
+    recommended_movies_df['support'] = support
+    recommended_movies_df['confidence'] = confidence
+    recommended_movies_df['lift'] = lift
+    recommended_movies_df['lift'] = recommended_movies_df['lift'].astype(float)            
+    recommended_movies_df = recommended_movies_df.nlargest(top_n, 'lift')
+    recommended_movies_df = recommended_movies_df.reset_index(drop=True)
+    recommend_movies = recommended_movies_df['recommended_movie']
 
-    for _, row in association_rules_df.iterrows():
-        antecedent = row['antecedents']
-        consequent = row['consequents']
-        lift = row['lift']
-
-        if antecedent.issubset(user_watched_movies) and lift >= min_lift:
-            recommended_movie = list(consequent.difference(user_watched_movies))
-            recommended_movies.extend(recommended_movie)
-
-    recommended_movies = list(set(recommended_movies))
-    
-    # 상위 N개의 영화 추천
-    recommended_movies = sorted(recommended_movies, key=lambda x: recommended_movies.count(x), reverse=True)[:top_n]
-    
-    return recommended_movies
-
-
-
+    return list(recommend_movies)
