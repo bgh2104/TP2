@@ -23,10 +23,10 @@ load_col:
 # selected_features: [genre]
 
 # data filtering for interactions
-val_interval:
-    rating: "[3,inf)"    
-unused_col: 
-    inter: [rating]
+# val_interval:
+#     rating: "[3,inf)"    
+# unused_col: 
+#     inter: [rating]
 
 
 log_wandb : True
