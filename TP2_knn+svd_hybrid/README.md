@@ -1,4 +1,4 @@
-# Surprise 라이브러리를 활용한 KNN + KNN_Basic Recommendation
+# Surprise 라이브러리를 활용한 KNN_Basic + SVD Recommendation
 
 라이브러리를 활용해 간단하게 만들어본 하이브리드 모델입니다.
 성능측정과 시각화를 따로 해놓지는 않아서 ipynb파일이 이것저것 시도한 내용들이 적혀있습니다.
