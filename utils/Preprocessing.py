@@ -21,7 +21,6 @@ def tokenizer(sentence):
     return word_list
 
 
-
 # vector = 0: 벡터 초기화. 이 벡터는 문장 벡터를 구성하기 위해 토큰들의 벡터를 누적할 것입니다.
 # for token in token_list:: 주어진 토큰 리스트의 각 토큰에 대해서 다음 과정을 반복합니다.
 # vector += wv[token]: 각 토큰을 해당 토큰의 워드 임베딩 벡터로 변환하고, 기존의 vector에 더해줍니다. 이렇게 하면 문장 내의 모든 토큰 벡터가 더해집니다.
